@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Excel Stratified Sampler</title>
+<script src="xlsx.full.min.js"></script>
+<script>if(typeof XLSX==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');}</script>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d222c; --line:#2a3140;
+    --text:#e6e9ef; --muted:#93a0b4; --accent:#4f9cf9; --accent2:#38d39f;
+    --warn:#f5a623; --danger:#ff6b6b; --radius:12px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,#0f1115,#0c0e12); color:var(--text); line-height:1.5;
+    padding:32px 20px 80px;
+  }
+  .wrap{max-width:1000px; margin:0 auto}
+  h1{font-size:24px; margin:0 0 4px; letter-spacing:-.3px}
+  h1 .em{color:var(--accent)}
+  .sub{color:var(--muted); margin:0 0 28px; font-size:14px}
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px 22px; margin-bottom:18px;
+  }
+  .card.dim{opacity:.45; pointer-events:none}
+  .step-h{display:flex; align-items:center; gap:10px; margin:0 0 14px}
+  .step-n{
+    width:24px; height:24px; border-radius:50%; background:var(--accent); color:#04121f;
+    display:grid; place-items:center; font-size:13px; font-weight:700; flex:none;
+  }
+  .step-h h2{font-size:16px; margin:0; font-weight:600}
+  label.fld{display:block; font-size:13px; color:var(--muted); margin:0 0 6px}
+
+  /* Dropzone */
+  #drop{
+    border:2px dashed var(--line); border-radius:var(--radius); padding:30px 20px; text-align:center;
+    cursor:pointer; transition:.15s; background:var(--panel2);
+  }
+  #drop:hover,#drop.drag{border-color:var(--accent); background:#1b2330}
+  #drop .big{font-size:15px; font-weight:600}
+  #drop .small{color:var(--muted); font-size:13px; margin-top:4px}
+  .fileinfo{display:flex; align-items:center; gap:10px; margin-top:14px; font-size:13px; color:var(--muted)}
+  .pill{background:#223; border:1px solid var(--line); border-radius:999px; padding:3px 10px; color:var(--text)}
+
+  select,input[type=number],input[type=text]{
+    background:var(--panel2); border:1px solid var(--line); color:var(--text);
+    border-radius:8px; padding:8px 10px; font-size:14px; outline:none; width:100%;
+  }
+  select:focus,input:focus{border-color:var(--accent)}
+  .row{display:flex; gap:16px; flex-wrap:wrap}
+  .row>div{flex:1; min-width:180px}
+
+  /* Multi-select column picker */
+  .ms{position:relative}
+  .ms-head{
+    background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+    min-height:40px; cursor:pointer; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
+  }
+  .ms-head .ph{color:var(--muted); font-size:14px}
+  .chip{background:var(--accent); color:#04121f; border-radius:6px; padding:2px 8px; font-size:12px; font-weight:600; display:flex; gap:6px; align-items:center}
+  .chip b{cursor:pointer; opacity:.8}
+  .ms-list{
+    position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; max-height:260px; overflow:auto;
+    background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:6px; display:none;
+    box-shadow:0 12px 30px rgba(0,0,0,.4);
+  }
+  .ms-list.open{display:block}
+  .ms-opt{display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:6px; cursor:pointer; font-size:14px}
+  .ms-opt:hover{background:#243}
+  .ms-opt input{width:auto}
+  .ms-opt .ct{margin-left:auto; color:var(--muted); font-size:12px}
+
+  button{
+    background:var(--accent); color:#04121f; border:none; border-radius:9px; padding:11px 18px;
+    font-size:14px; font-weight:700; cursor:pointer; transition:.12s;
+  }
+  button:hover{filter:brightness(1.08)}
+  button:disabled{opacity:.4; cursor:not-allowed}
+  button.ghost{background:transparent; color:var(--text); border:1px solid var(--line)}
+  button.go{background:var(--accent2); font-size:15px; padding:12px 24px}
+
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line)}
+  th{color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.4px}
+  tbody tr:hover{background:#1a2029}
+  td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
+  .strata-wrap{max-height:340px; overflow:auto; border:1px solid var(--line); border-radius:8px; margin-top:8px}
+  input.rt{width:80px; text-align:right; padding:5px 8px}
+  .samp{color:var(--accent2); font-weight:700}
+
+  .opts{display:flex; gap:20px; flex-wrap:wrap; align-items:center; margin-top:14px; font-size:13px; color:var(--muted)}
+  .opts label{display:flex; align-items:center; gap:7px; cursor:pointer}
+  .opts input[type=checkbox]{width:auto}
+  .seed{width:120px !important}
+
+  .summary{display:flex; gap:26px; flex-wrap:wrap; margin:6px 0 16px}
+  .stat{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:12px 18px; min-width:120px}
+  .stat .k{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px}
+  .stat .v{font-size:24px; font-weight:700; margin-top:2px}
+  .stat .v.acc{color:var(--accent2)}
+
+  .actions{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:6px}
+  .note{color:var(--muted); font-size:12.5px; margin-top:10px}
+  .err{color:var(--danger); font-size:13px; margin-top:10px}
+  .preview-wrap{max-height:360px; overflow:auto; border:1px solid var(--line); border-radius:8px; margin-top:14px}
+  .hidden{display:none}
+  a.foot{color:var(--muted); font-size:12px; text-decoration:none}
+  code{background:#223; padding:1px 6px; border-radius:5px; font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="em">Excel</span> Stratified Sampler</h1>
+  <p class="sub">Upload a sheet, choose category columns (combine several to build combos), set an extraction ratio per category, and pull a random sample.</p>
+
+  <!-- STEP 1 -->
+  <div class="card" id="card1">
+    <div class="step-h"><div class="step-n">1</div><h2>Upload spreadsheet</h2></div>
+    <div id="drop">
+      <div class="big">Drop an .xlsx / .xls / .csv file here</div>
+      <div class="small">or click to browse — everything runs locally in your browser</div>
+    </div>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hidden" />
+    <div id="fileinfo" class="fileinfo hidden"></div>
+    <div id="sheetPick" class="row hidden" style="margin-top:14px">
+      <div style="max-width:280px">
+        <label class="fld">Sheet</label>
+        <select id="sheetSel"></select>
+      </div>
+    </div>
+    <div id="err1" class="err hidden"></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card dim" id="card2">
+    <div class="step-h"><div class="step-n">2</div><h2>Choose category column(s)</h2></div>
+    <label class="fld">Pick one or more columns. Multiple columns are combined into value combos (strata).</label>
+    <div class="ms" id="ms">
+      <div class="ms-head" id="msHead"><span class="ph">Select columns…</span></div>
+      <div class="ms-list" id="msList"></div>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="excludeBlank" checked /> Exclude rows with blank category values</label>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="card dim" id="card3">
+    <div class="step-h"><div class="step-n">3</div><h2>Set extraction ratio</h2></div>
+    <div class="row">
+      <div style="max-width:220px">
+        <label class="fld">Extract by</label>
+        <select id="mode">
+          <option value="pct">Percentage of each category</option>
+          <option value="count">Fixed count per category</option>
+        </select>
+      </div>
+      <div style="max-width:220px">
+        <label class="fld" id="globalLbl">Default ratio (%)</label>
+        <input type="number" id="globalPct" value="20" min="0" step="1" />
+      </div>
+      <div style="max-width:220px" id="roundWrap">
+        <label class="fld">Rounding</label>
+        <select id="roundMode">
+          <option value="round">Round to nearest</option>
+          <option value="floor">Round down (floor)</option>
+          <option value="ceil">Round up (ceil)</option>
+        </select>
+      </div>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="minOne" checked /> At least 1 per category (when value &gt; 0)</label>
+      <label><input type="checkbox" id="useSeed" /> Reproducible seed</label>
+      <input type="text" id="seed" class="seed" placeholder="e.g. 42" disabled />
+      <button class="ghost" id="rollSeed" style="padding:6px 12px" disabled>🎲 Random seed</button>
+    </div>
+    <p class="note">Edit any row below to override the default for that category.</p>
+    <div class="strata-wrap">
+      <table id="strataTable"><thead></thead><tbody></tbody></table>
+    </div>
+    <div id="shortWarn" class="note hidden" style="color:var(--warn);margin-top:10px"></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="card dim" id="card4">
+    <div class="step-h"><div class="step-n">4</div><h2>Sample &amp; export</h2></div>
+    <div class="summary">
+      <div class="stat"><div class="k">Total rows</div><div class="v" id="sTotal">0</div></div>
+      <div class="stat"><div class="k">Categories</div><div class="v" id="sCats">0</div></div>
+      <div class="stat"><div class="k">Will sample</div><div class="v acc" id="sSample">0</div></div>
+    </div>
+    <div class="opts" style="margin-top:0;margin-bottom:14px">
+      <label><input type="checkbox" id="addStratum" checked /> Add a <code>Category</code> column to the export (tags each row with its combo)</label>
+    </div>
+    <div class="actions">
+      <button class="go" id="sampleBtn">🎲 Draw random sample</button>
+      <button class="ghost" id="downloadBtn" disabled>⬇ Download .xlsx</button>
+      <span class="note" id="drawMsg"></span>
+    </div>
+    <div class="preview-wrap hidden" id="previewWrap">
+      <table id="previewTable"><thead></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <a class="foot" href="README.md">How it works →</a>
+</div>
+
+<script>
+// ---------- State ----------
+let workbook=null, sheetName=null, headers=[], rows=[], selectedCols=[];
+let strata=[];          // [{key, values[], rows[], ratio(pct or null override), n}]
+let lastSample=[];      // sampled rows (arrays)
+const $=id=>document.getElementById(id);
+
+// ---------- Seeded PRNG (mulberry32) ----------
+function makeRng(seedStr){
+  let h=1779033703^seedStr.length;
+  for(let i=0;i<seedStr.length;i++){h=Math.imul(h^seedStr.charCodeAt(i),3432918353); h=h<<13|h>>>19;}
+  let a=h>>>0;
+  return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+}
+function shuffle(arr,rng){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1)); [a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+// ---------- File loading ----------
+const drop=$('drop'), fileInput=$('file');
+drop.addEventListener('click',()=>fileInput.click());
+drop.addEventListener('dragover',e=>{e.preventDefault(); drop.classList.add('drag');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('drag'));
+drop.addEventListener('drop',e=>{e.preventDefault(); drop.classList.remove('drag'); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file){
+  $('err1').classList.add('hidden');
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      workbook=XLSX.read(e.target.result,{type:'array'});
+      const info=$('fileinfo'); info.classList.remove('hidden');
+      info.innerHTML=`<span class="pill">${escapeHtml(file.name)}</span> <span>${(file.size/1024).toFixed(1)} KB · ${workbook.SheetNames.length} sheet(s)</span>`;
+      const sel=$('sheetSel'); sel.innerHTML='';
+      workbook.SheetNames.forEach(n=>{const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o);});
+      $('sheetPick').classList.toggle('hidden', workbook.SheetNames.length<2);
+      sel.onchange=()=>loadSheet(sel.value);
+      loadSheet(workbook.SheetNames[0]);
+    }catch(err){ showErr('Could not read file: '+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function loadSheet(name){
+  sheetName=name;
+  const ws=workbook.Sheets[name];
+  const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',blankrows:false});
+  if(!aoa.length){ showErr('That sheet is empty.'); return; }
+  headers=aoa[0].map((h,i)=> (h===''||h==null)? `Column ${i+1}` : String(h));
+  rows=aoa.slice(1).filter(r=>r.some(c=>String(c).trim()!==''));
+  selectedCols=[]; strata=[]; lastSample=[];
+  buildColumnPicker();
+  $('card2').classList.remove('dim');
+  $('card3').classList.add('dim'); $('card4').classList.add('dim');
+  $('previewWrap').classList.add('hidden');
+  $('downloadBtn').disabled=true; $('drawMsg').textContent='';
+  updateStrataUI();
+}
+
+function showErr(m){ const e=$('err1'); e.textContent=m; e.classList.remove('hidden'); }
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ---------- Column multi-select ----------
+function buildColumnPicker(){
+  const list=$('msList'); list.innerHTML='';
+  headers.forEach((h,i)=>{
+    const opt=document.createElement('label'); opt.className='ms-opt';
+    const nonBlank=rows.filter(r=>String(r[i]??'').trim()!=='').length;
+    const distinct=new Set(rows.map(r=>String(r[i]??'').trim())).size;
+    opt.innerHTML=`<input type="checkbox" value="${i}"><span>${escapeHtml(h)}</span><span class="ct">${distinct} distinct</span>`;
+    opt.querySelector('input').addEventListener('change',onColToggle);
+    list.appendChild(opt);
+  });
+  renderChips();
+}
+$('msHead').addEventListener('click',e=>{ if(e.target.tagName!=='B') $('msList').classList.toggle('open'); });
+document.addEventListener('click',e=>{ if(!$('ms').contains(e.target)) $('msList').classList.remove('open'); });
+
+function onColToggle(e){
+  const i=parseInt(e.target.value);
+  if(e.target.checked){ if(!selectedCols.includes(i)) selectedCols.push(i); }
+  else selectedCols=selectedCols.filter(c=>c!==i);
+  renderChips(); recompute();
+}
+function renderChips(){
+  const head=$('msHead');
+  head.querySelectorAll('.chip').forEach(c=>c.remove());
+  const ph=head.querySelector('.ph');
+  if(selectedCols.length===0){ if(ph) ph.style.display=''; return; }
+  if(ph) ph.style.display='none';
+  selectedCols.forEach(i=>{
+    const chip=document.createElement('span'); chip.className='chip';
+    chip.innerHTML=`${escapeHtml(headers[i])} <b data-i="${i}">✕</b>`;
+    chip.querySelector('b').addEventListener('click',ev=>{ ev.stopPropagation(); removeCol(i); });
+    head.appendChild(chip);
+  });
+}
+function removeCol(i){
+  selectedCols=selectedCols.filter(c=>c!==i);
+  const cb=$('msList').querySelector(`input[value="${i}"]`); if(cb) cb.checked=false;
+  renderChips(); recompute();
+}
+$('excludeBlank').addEventListener('change',recompute);
+
+// ---------- Strata computation ----------
+function recompute(){
+  if(selectedCols.length===0){ strata=[]; $('card3').classList.add('dim'); $('card4').classList.add('dim'); updateStrataUI(); return; }
+  const excludeBlank=$('excludeBlank').checked;
+  const map=new Map();
+  for(const r of rows){
+    const vals=selectedCols.map(i=>String(r[i]??'').trim());
+    if(excludeBlank && vals.some(v=>v==='')) continue;
+    const key=vals.join(' ⋀ ');
+    if(!map.has(key)) map.set(key,{key,values:vals,rows:[],ratio:null});
+    map.get(key).rows.push(r);
+  }
+  const prev=new Map(strata.map(s=>[s.key,s.ratio]));
+  strata=[...map.values()].sort((a,b)=>b.rows.length-a.rows.length);
+  strata.forEach(s=>{ if(prev.has(s.key)) s.ratio=prev.get(s.key); });
+  $('card3').classList.remove('dim'); $('card4').classList.remove('dim');
+  updateStrataUI();
+}
+
+function isPct(){ return $('mode').value==='pct'; }
+function ratioFor(s){ return s.ratio!=null ? s.ratio : parseFloat($('globalPct').value)||0; }
+function sampleN(count,val){
+  let n;
+  if(isPct()){
+    n=count*val/100;
+    const rm=$('roundMode').value;
+    n = rm==='floor'?Math.floor(n): rm==='ceil'?Math.ceil(n): Math.round(n);
+  } else {
+    n=Math.floor(val); // fixed count per category
+  }
+  if($('minOne').checked && val>0 && count>0) n=Math.max(1,n);
+  return Math.min(Math.max(0,n),count);
+}
+function syncMode(){
+  const pct=isPct();
+  $('globalLbl').textContent = pct ? 'Default ratio (%)' : 'Default count / category';
+  $('globalPct').value = pct ? 20 : 5;
+  $('roundWrap').style.display = pct ? '' : 'none';
+  document.querySelectorAll('#strataTable thead th.rt-h').forEach(th=>th.textContent = pct?'Ratio %':'Count');
+  updateStrataUI();
+}
+
+function updateStrataUI(){
+  const thead=$('strataTable').querySelector('thead');
+  const tbody=$('strataTable').querySelector('tbody');
+  thead.innerHTML=''; tbody.innerHTML='';
+  if(strata.length===0){ tbody.innerHTML='<tr><td style="color:var(--muted)">Select category column(s) to see categories.</td></tr>'; updateSummary(); return; }
+  const hr=document.createElement('tr');
+  selectedCols.forEach(i=>{ const th=document.createElement('th'); th.textContent=headers[i]; hr.appendChild(th); });
+  hr.innerHTML+=`<th class="num">Rows</th><th class="num rt-h">${isPct()?'Ratio %':'Count'}</th><th class="num">Sample</th>`;
+  thead.appendChild(hr);
+  let shortCats=0;
+  strata.forEach((s,idx)=>{
+    const tr=document.createElement('tr');
+    s.values.forEach(v=>{ const td=document.createElement('td'); td.textContent=v===''?'(blank)':v; if(v==='') td.style.color='var(--muted)'; tr.appendChild(td); });
+    const val=ratioFor(s), n=sampleN(s.rows.length,val);
+    // shortfall: a fixed count larger than the rows available in this category
+    const short = !isPct() && Math.floor(val) > s.rows.length;
+    if(short) shortCats++;
+    tr.innerHTML+=`<td class="num">${s.rows.length}</td>`;
+    const tdR=document.createElement('td'); tdR.className='num';
+    const inp=document.createElement('input'); inp.type='number'; inp.className='rt'; inp.min=0; inp.step=1;
+    if(isPct()) inp.max=100;
+    inp.value=(s.ratio!=null?s.ratio:''); inp.placeholder=(parseFloat($('globalPct').value)||0);
+    inp.addEventListener('input',()=>{ let v=inp.value===''?null:Math.max(0,parseFloat(inp.value)||0); if(v!=null && isPct()) v=Math.min(100,v); s.ratio=v; updateStrataUI(); });
+    tdR.appendChild(inp); tr.appendChild(tdR);
+    const tdS=document.createElement('td'); tdS.className='num samp'; tdS.textContent=n;
+    if(short){ tdS.style.color='var(--warn)'; tdS.textContent=`${n} ⚠`; tdS.title=`Requested ${Math.floor(val)} but only ${s.rows.length} row(s) available — taking all ${n}.`; }
+    tr.appendChild(tdS);
+    tbody.appendChild(tr);
+  });
+  const sw=$('shortWarn');
+  if(shortCats>0){ sw.classList.remove('hidden'); sw.textContent=`⚠ ${shortCats} categor${shortCats===1?'y has':'ies have'} fewer rows than the requested count — those take all available rows.`; }
+  else sw.classList.add('hidden');
+  updateSummary();
+}
+function updateSummary(){
+  const total=strata.reduce((a,s)=>a+s.rows.length,0);
+  const samp=strata.reduce((a,s)=>a+sampleN(s.rows.length,ratioFor(s)),0);
+  $('sTotal').textContent=total; $('sCats').textContent=strata.length; $('sSample').textContent=samp;
+}
+['globalPct','roundMode','minOne'].forEach(id=>$(id).addEventListener('input',updateStrataUI));
+$('mode').addEventListener('change',syncMode);
+$('useSeed').addEventListener('change',e=>{ $('seed').disabled=!e.target.checked; $('rollSeed').disabled=!e.target.checked; });
+$('rollSeed').addEventListener('click',()=>{ $('seed').value=Math.floor(Math.random()*100000); });
+
+// ---------- Sampling ----------
+$('sampleBtn').addEventListener('click',()=>{
+  if(strata.length===0){ $('drawMsg').textContent='Pick category column(s) first.'; return; }
+  const rng = $('useSeed').checked ? makeRng($('seed').value||'seed') : Math.random;
+  lastSample=[];
+  strata.forEach(s=>{
+    const n=sampleN(s.rows.length,ratioFor(s));
+    shuffle(s.rows,rng).slice(0,n).forEach(r=>lastSample.push({row:r,key:s.key}));
+  });
+  renderPreview();
+  $('downloadBtn').disabled=lastSample.length===0;
+  $('drawMsg').textContent=`Drew ${lastSample.length} row(s) across ${strata.length} categor${strata.length===1?'y':'ies'}.`;
+});
+
+function exportHeaders(){ return $('addStratum').checked ? [...headers,'Category'] : headers.slice(); }
+function exportRow(item){ return $('addStratum').checked ? [...item.row, item.key] : item.row.slice(); }
+
+function renderPreview(){
+  const wrap=$('previewWrap'); wrap.classList.remove('hidden');
+  const thead=$('previewTable').querySelector('thead'), tbody=$('previewTable').querySelector('tbody');
+  thead.innerHTML=''; tbody.innerHTML='';
+  const cols=exportHeaders();
+  const hr=document.createElement('tr'); cols.forEach(h=>{const th=document.createElement('th'); th.textContent=h; hr.appendChild(th);}); thead.appendChild(hr);
+  lastSample.slice(0,200).forEach(item=>{ const cells=exportRow(item); const tr=document.createElement('tr'); cols.forEach((_,i)=>{const td=document.createElement('td'); td.textContent=cells[i]??''; tr.appendChild(td);}); tbody.appendChild(tr); });
+  if(lastSample.length>200){ const tr=document.createElement('tr'); const td=document.createElement('td'); td.colSpan=cols.length; td.style.color='var(--muted)'; td.textContent=`… and ${lastSample.length-200} more (full set is in the download).`; tr.appendChild(td); tbody.appendChild(tr); }
+}
+
+$('addStratum').addEventListener('change',()=>{ if(lastSample.length) renderPreview(); });
+
+$('downloadBtn').addEventListener('click',()=>{
+  if(!lastSample.length) return;
+  const aoa=[exportHeaders(),...lastSample.map(exportRow)];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Sample');
+  const base=(sheetName||'sheet').replace(/[^\w -]/g,'').slice(0,20);
+  XLSX.writeFile(wb,`sample_${base}_${lastSample.length}rows.xlsx`);
+});
+</script>
+</body>
+</html>
