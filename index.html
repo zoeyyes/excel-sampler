@@ -8,14 +8,14 @@
 <script>if(typeof XLSX==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');}</script>
 <style>
   :root{
-    --bg:#0f1115; --panel:#171a21; --panel2:#1d222c; --line:#2a3140;
-    --text:#e6e9ef; --muted:#93a0b4; --accent:#4f9cf9; --accent2:#38d39f;
-    --warn:#f5a623; --danger:#ff6b6b; --radius:12px;
+    --bg:#f5f7fa; --panel:#ffffff; --panel2:#f2f5f9; --line:#dde3ec;
+    --text:#1c2530; --muted:#647085; --accent:#2f6fed; --accent2:#0f9d6b;
+    --warn:#b7791f; --danger:#d92d20; --onAccent:#ffffff; --radius:12px;
   }
   *{box-sizing:border-box}
   body{
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:linear-gradient(180deg,#0f1115,#0c0e12); color:var(--text); line-height:1.5;
+    background:linear-gradient(180deg,#f7f9fc,#eef2f7); color:var(--text); line-height:1.5;
     padding:32px 20px 80px;
   }
   .wrap{max-width:1000px; margin:0 auto}
@@ -24,12 +24,12 @@
   .sub{color:var(--muted); margin:0 0 28px; font-size:14px}
   .card{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-    padding:20px 22px; margin-bottom:18px;
+    padding:20px 22px; margin-bottom:18px; box-shadow:0 1px 3px rgba(20,35,60,.06);
   }
-  .card.dim{opacity:.45; pointer-events:none}
+  .card.dim{opacity:.5; pointer-events:none}
   .step-h{display:flex; align-items:center; gap:10px; margin:0 0 14px}
   .step-n{
-    width:24px; height:24px; border-radius:50%; background:var(--accent); color:#04121f;
+    width:24px; height:24px; border-radius:50%; background:var(--accent); color:var(--onAccent);
     display:grid; place-items:center; font-size:13px; font-weight:700; flex:none;
   }
   .step-h h2{font-size:16px; margin:0; font-weight:600}
@@ -40,11 +40,11 @@
     border:2px dashed var(--line); border-radius:var(--radius); padding:30px 20px; text-align:center;
     cursor:pointer; transition:.15s; background:var(--panel2);
   }
-  #drop:hover,#drop.drag{border-color:var(--accent); background:#1b2330}
+  #drop:hover,#drop.drag{border-color:var(--accent); background:#eaf1fe}
   #drop .big{font-size:15px; font-weight:600}
   #drop .small{color:var(--muted); font-size:13px; margin-top:4px}
   .fileinfo{display:flex; align-items:center; gap:10px; margin-top:14px; font-size:13px; color:var(--muted)}
-  .pill{background:#223; border:1px solid var(--line); border-radius:999px; padding:3px 10px; color:var(--text)}
+  .pill{background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:3px 10px; color:var(--text)}
 
   select,input[type=number],input[type=text]{
     background:var(--panel2); border:1px solid var(--line); color:var(--text);
@@ -61,21 +61,21 @@
     min-height:40px; cursor:pointer; display:flex; flex-wrap:wrap; gap:6px; align-items:center;
   }
   .ms-head .ph{color:var(--muted); font-size:14px}
-  .chip{background:var(--accent); color:#04121f; border-radius:6px; padding:2px 8px; font-size:12px; font-weight:600; display:flex; gap:6px; align-items:center}
+  .chip{background:var(--accent); color:var(--onAccent); border-radius:6px; padding:2px 8px; font-size:12px; font-weight:600; display:flex; gap:6px; align-items:center}
   .chip b{cursor:pointer; opacity:.8}
   .ms-list{
     position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; max-height:260px; overflow:auto;
     background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:6px; display:none;
-    box-shadow:0 12px 30px rgba(0,0,0,.4);
+    box-shadow:0 12px 30px rgba(20,35,60,.14);
   }
   .ms-list.open{display:block}
   .ms-opt{display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:6px; cursor:pointer; font-size:14px}
-  .ms-opt:hover{background:#243}
+  .ms-opt:hover{background:#eaf0fb}
   .ms-opt input{width:auto}
   .ms-opt .ct{margin-left:auto; color:var(--muted); font-size:12px}
 
   button{
-    background:var(--accent); color:#04121f; border:none; border-radius:9px; padding:11px 18px;
+    background:var(--accent); color:var(--onAccent); border:none; border-radius:9px; padding:11px 18px;
     font-size:14px; font-weight:700; cursor:pointer; transition:.12s;
   }
   button:hover{filter:brightness(1.08)}
@@ -86,7 +86,7 @@
   table{width:100%; border-collapse:collapse; font-size:13px}
   th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line)}
   th{color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.4px}
-  tbody tr:hover{background:#1a2029}
+  tbody tr:hover{background:#f2f7fe}
   td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
   .strata-wrap{max-height:340px; overflow:auto; border:1px solid var(--line); border-radius:8px; margin-top:8px}
   input.rt{width:80px; text-align:right; padding:5px 8px}
@@ -109,7 +109,7 @@
   .preview-wrap{max-height:360px; overflow:auto; border:1px solid var(--line); border-radius:8px; margin-top:14px}
   .hidden{display:none}
   a.foot{color:var(--muted); font-size:12px; text-decoration:none}
-  code{background:#223; padding:1px 6px; border-radius:5px; font-size:12px}
+  code{background:var(--panel2); padding:1px 6px; border-radius:5px; font-size:12px; border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -157,6 +157,7 @@
         <select id="mode">
           <option value="pct">Percentage of each category</option>
           <option value="count">Fixed count per category</option>
+          <option value="total">Fixed total across all categories</option>
         </select>
       </div>
       <div style="max-width:220px">
@@ -178,7 +179,7 @@
       <input type="text" id="seed" class="seed" placeholder="e.g. 42" disabled />
       <button class="ghost" id="rollSeed" style="padding:6px 12px" disabled>🎲 Random seed</button>
     </div>
-    <p class="note">Edit any row below to override the default for that category.</p>
+    <p class="note" id="overrideNote">Edit any row below to override the default for that category.</p>
     <div class="strata-wrap">
       <table id="strataTable"><thead></thead><tbody></tbody></table>
     </div>
@@ -335,8 +336,13 @@ function recompute(){
   updateStrataUI();
 }
 
-function isPct(){ return $('mode').value==='pct'; }
+function modeVal(){ return $('mode').value; }
+function isPct(){ return modeVal()==='pct'; }
+function isTotal(){ return modeVal()==='total'; }
+function totalRowCount(){ return strata.reduce((a,s)=>a+s.rows.length,0); }
 function ratioFor(s){ return s.ratio!=null ? s.ratio : parseFloat($('globalPct').value)||0; }
+
+// Per-category sample size for the percentage / fixed-count modes.
 function sampleN(count,val){
   let n;
   if(isPct()){
@@ -349,12 +355,45 @@ function sampleN(count,val){
   if($('minOne').checked && val>0 && count>0) n=Math.max(1,n);
   return Math.min(Math.max(0,n),count);
 }
+
+// Sample size for every stratum, keyed by stratum key. Handles all three modes.
+function allocations(){
+  const m=new Map();
+  if(isTotal()){
+    // Distribute one target total across categories, proportional to category size,
+    // capped by each category's available rows (largest-remainder method).
+    const totalRows=totalRowCount();
+    const target=Math.max(0,Math.floor(parseFloat($('globalPct').value)||0));
+    const N=Math.min(target,totalRows); // can't sample more than we have
+    const parts=strata.map(s=>{
+      const exact = totalRows ? N*s.rows.length/totalRows : 0;
+      const floor = Math.min(Math.floor(exact), s.rows.length);
+      return {s, n:floor, rem: exact-Math.floor(exact)};
+    });
+    let remaining = N - parts.reduce((a,p)=>a+p.n,0);
+    parts.sort((a,b)=>b.rem-a.rem);
+    while(remaining>0){
+      let progressed=false;
+      for(const p of parts){
+        if(remaining<=0) break;
+        if(p.n < p.s.rows.length){ p.n++; remaining--; progressed=true; }
+      }
+      if(!progressed) break; // every category is at capacity
+    }
+    parts.forEach(p=>m.set(p.s.key,p.n));
+  } else {
+    strata.forEach(s=>m.set(s.key, sampleN(s.rows.length, ratioFor(s))));
+  }
+  return m;
+}
+
 function syncMode(){
-  const pct=isPct();
-  $('globalLbl').textContent = pct ? 'Default ratio (%)' : 'Default count / category';
-  $('globalPct').value = pct ? 20 : 5;
+  const pct=isPct(), total=isTotal();
+  $('globalLbl').textContent = pct ? 'Default ratio (%)' : total ? 'Target total sample size' : 'Default count / category';
+  $('globalPct').value = pct ? 20 : total ? Math.min(30, totalRowCount()||30) : 5;
   $('roundWrap').style.display = pct ? '' : 'none';
-  document.querySelectorAll('#strataTable thead th.rt-h').forEach(th=>th.textContent = pct?'Ratio %':'Count');
+  $('minOne').closest('label').style.display = total ? 'none' : '';   // min-one is per-category only
+  $('overrideNote').style.display = total ? 'none' : '';              // no per-category override in total mode
   updateStrataUI();
 }
 
@@ -362,39 +401,53 @@ function updateStrataUI(){
   const thead=$('strataTable').querySelector('thead');
   const tbody=$('strataTable').querySelector('tbody');
   thead.innerHTML=''; tbody.innerHTML='';
-  if(strata.length===0){ tbody.innerHTML='<tr><td style="color:var(--muted)">Select category column(s) to see categories.</td></tr>'; updateSummary(); return; }
+  if(strata.length===0){ tbody.innerHTML='<tr><td style="color:var(--muted)">Select category column(s) to see categories.</td></tr>'; $('shortWarn').classList.add('hidden'); updateSummary(new Map()); return; }
+  const total=isTotal();
+  const alloc=allocations();
   const hr=document.createElement('tr');
   selectedCols.forEach(i=>{ const th=document.createElement('th'); th.textContent=headers[i]; hr.appendChild(th); });
-  hr.innerHTML+=`<th class="num">Rows</th><th class="num rt-h">${isPct()?'Ratio %':'Count'}</th><th class="num">Sample</th>`;
+  hr.innerHTML += total
+    ? `<th class="num">Rows</th><th class="num">Sample</th>`
+    : `<th class="num">Rows</th><th class="num rt-h">${isPct()?'Ratio %':'Count'}</th><th class="num">Sample</th>`;
   thead.appendChild(hr);
   let shortCats=0;
-  strata.forEach((s,idx)=>{
+  strata.forEach(s=>{
     const tr=document.createElement('tr');
     s.values.forEach(v=>{ const td=document.createElement('td'); td.textContent=v===''?'(blank)':v; if(v==='') td.style.color='var(--muted)'; tr.appendChild(td); });
-    const val=ratioFor(s), n=sampleN(s.rows.length,val);
-    // shortfall: a fixed count larger than the rows available in this category
-    const short = !isPct() && Math.floor(val) > s.rows.length;
-    if(short) shortCats++;
+    const n=alloc.get(s.key)||0;
     tr.innerHTML+=`<td class="num">${s.rows.length}</td>`;
-    const tdR=document.createElement('td'); tdR.className='num';
-    const inp=document.createElement('input'); inp.type='number'; inp.className='rt'; inp.min=0; inp.step=1;
-    if(isPct()) inp.max=100;
-    inp.value=(s.ratio!=null?s.ratio:''); inp.placeholder=(parseFloat($('globalPct').value)||0);
-    inp.addEventListener('input',()=>{ let v=inp.value===''?null:Math.max(0,parseFloat(inp.value)||0); if(v!=null && isPct()) v=Math.min(100,v); s.ratio=v; updateStrataUI(); });
-    tdR.appendChild(inp); tr.appendChild(tdR);
-    const tdS=document.createElement('td'); tdS.className='num samp'; tdS.textContent=n;
-    if(short){ tdS.style.color='var(--warn)'; tdS.textContent=`${n} ⚠`; tdS.title=`Requested ${Math.floor(val)} but only ${s.rows.length} row(s) available — taking all ${n}.`; }
-    tr.appendChild(tdS);
+    if(!total){
+      const val=ratioFor(s);
+      const short = !isPct() && Math.floor(val) > s.rows.length; // fixed count exceeds rows available
+      if(short) shortCats++;
+      const tdR=document.createElement('td'); tdR.className='num';
+      const inp=document.createElement('input'); inp.type='number'; inp.className='rt'; inp.min=0; inp.step=1;
+      if(isPct()) inp.max=100;
+      inp.value=(s.ratio!=null?s.ratio:''); inp.placeholder=(parseFloat($('globalPct').value)||0);
+      inp.addEventListener('input',()=>{ let v=inp.value===''?null:Math.max(0,parseFloat(inp.value)||0); if(v!=null && isPct()) v=Math.min(100,v); s.ratio=v; updateStrataUI(); });
+      tdR.appendChild(inp); tr.appendChild(tdR);
+      const tdS=document.createElement('td'); tdS.className='num samp'; tdS.textContent=n;
+      if(short){ tdS.style.color='var(--warn)'; tdS.textContent=`${n} ⚠`; tdS.title=`Requested ${Math.floor(val)} but only ${s.rows.length} row(s) available — taking all ${n}.`; }
+      tr.appendChild(tdS);
+    } else {
+      const tdS=document.createElement('td'); tdS.className='num samp'; tdS.textContent=n; tr.appendChild(tdS);
+    }
     tbody.appendChild(tr);
   });
   const sw=$('shortWarn');
-  if(shortCats>0){ sw.classList.remove('hidden'); sw.textContent=`⚠ ${shortCats} categor${shortCats===1?'y has':'ies have'} fewer rows than the requested count — those take all available rows.`; }
-  else sw.classList.add('hidden');
-  updateSummary();
+  if(total){
+    const totalRows=totalRowCount(), target=Math.floor(parseFloat($('globalPct').value)||0);
+    if(target>totalRows){ sw.classList.remove('hidden'); sw.textContent=`⚠ Requested total ${target} exceeds the ${totalRows} available rows — sampling all ${totalRows}.`; }
+    else sw.classList.add('hidden');
+  } else if(shortCats>0){
+    sw.classList.remove('hidden'); sw.textContent=`⚠ ${shortCats} categor${shortCats===1?'y has':'ies have'} fewer rows than the requested count — those take all available rows.`;
+  } else sw.classList.add('hidden');
+  updateSummary(alloc);
 }
-function updateSummary(){
-  const total=strata.reduce((a,s)=>a+s.rows.length,0);
-  const samp=strata.reduce((a,s)=>a+sampleN(s.rows.length,ratioFor(s)),0);
+function updateSummary(alloc){
+  alloc = alloc || allocations();
+  const total=totalRowCount();
+  const samp=[...alloc.values()].reduce((a,n)=>a+n,0);
   $('sTotal').textContent=total; $('sCats').textContent=strata.length; $('sSample').textContent=samp;
 }
 ['globalPct','roundMode','minOne'].forEach(id=>$(id).addEventListener('input',updateStrataUI));
@@ -406,9 +459,10 @@ $('rollSeed').addEventListener('click',()=>{ $('seed').value=Math.floor(Math.ran
 $('sampleBtn').addEventListener('click',()=>{
   if(strata.length===0){ $('drawMsg').textContent='Pick category column(s) first.'; return; }
   const rng = $('useSeed').checked ? makeRng($('seed').value||'seed') : Math.random;
+  const alloc=allocations();
   lastSample=[];
   strata.forEach(s=>{
-    const n=sampleN(s.rows.length,ratioFor(s));
+    const n=alloc.get(s.key)||0;
     shuffle(s.rows,rng).slice(0,n).forEach(r=>lastSample.push({row:r,key:s.key}));
   });
   renderPreview();
