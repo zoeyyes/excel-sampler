@@ -50,6 +50,7 @@
     background:var(--panel2); border:1px solid var(--line); color:var(--text);
     border-radius:8px; padding:8px 10px; font-size:14px; outline:none; width:100%;
   }
+  select{padding-right:30px; text-overflow:ellipsis}
   select:focus,input:focus{border-color:var(--accent)}
   .row{display:flex; gap:16px; flex-wrap:wrap}
   .row>div{flex:1; min-width:180px}
@@ -107,6 +108,7 @@
   .note{color:var(--muted); font-size:12.5px; margin-top:10px}
   .err{color:var(--danger); font-size:13px; margin-top:10px}
   .preview-wrap{max-height:360px; overflow:auto; border:1px solid var(--line); border-radius:8px; margin-top:14px}
+  #previewTable th,#previewTable td{max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .hidden{display:none}
   a.foot{color:var(--muted); font-size:12px; text-decoration:none}
   code{background:var(--panel2); padding:1px 6px; border-radius:5px; font-size:12px; border:1px solid var(--line)}
@@ -152,12 +154,12 @@
   <div class="card dim" id="card3">
     <div class="step-h"><div class="step-n">3</div><h2>Set extraction ratio</h2></div>
     <div class="row">
-      <div style="max-width:220px">
+      <div style="max-width:280px">
         <label class="fld">Extract by</label>
         <select id="mode">
+          <option value="total" selected>Fixed total across all categories</option>
           <option value="pct">Percentage of each category</option>
           <option value="count">Fixed count per category</option>
-          <option value="total">Fixed total across all categories</option>
         </select>
       </div>
       <div style="max-width:220px">
@@ -454,6 +456,7 @@ function updateSummary(alloc){
 $('mode').addEventListener('change',syncMode);
 $('useSeed').addEventListener('change',e=>{ $('seed').disabled=!e.target.checked; $('rollSeed').disabled=!e.target.checked; });
 $('rollSeed').addEventListener('click',()=>{ $('seed').value=Math.floor(Math.random()*100000); });
+syncMode(); // apply the default mode's labels/defaults on load
 
 // ---------- Sampling ----------
 $('sampleBtn').addEventListener('click',()=>{
@@ -478,8 +481,8 @@ function renderPreview(){
   const thead=$('previewTable').querySelector('thead'), tbody=$('previewTable').querySelector('tbody');
   thead.innerHTML=''; tbody.innerHTML='';
   const cols=exportHeaders();
-  const hr=document.createElement('tr'); cols.forEach(h=>{const th=document.createElement('th'); th.textContent=h; hr.appendChild(th);}); thead.appendChild(hr);
-  lastSample.slice(0,200).forEach(item=>{ const cells=exportRow(item); const tr=document.createElement('tr'); cols.forEach((_,i)=>{const td=document.createElement('td'); td.textContent=cells[i]??''; tr.appendChild(td);}); tbody.appendChild(tr); });
+  const hr=document.createElement('tr'); cols.forEach(h=>{const th=document.createElement('th'); th.textContent=h; th.title=h; hr.appendChild(th);}); thead.appendChild(hr);
+  lastSample.slice(0,200).forEach(item=>{ const cells=exportRow(item); const tr=document.createElement('tr'); cols.forEach((_,i)=>{const td=document.createElement('td'); const val=cells[i]??''; td.textContent=val; td.title=val; tr.appendChild(td);}); tbody.appendChild(tr); });
   if(lastSample.length>200){ const tr=document.createElement('tr'); const td=document.createElement('td'); td.colSpan=cols.length; td.style.color='var(--muted)'; td.textContent=`… and ${lastSample.length-200} more (full set is in the download).`; tr.appendChild(td); tbody.appendChild(tr); }
 }
 
