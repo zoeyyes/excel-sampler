@@ -8,14 +8,14 @@
 <script>if(typeof XLSX==='undefined'){document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');}</script>
 <style>
   :root{
-    --bg:#f5f7fa; --panel:#ffffff; --panel2:#f2f5f9; --line:#dde3ec;
-    --text:#1c2530; --muted:#647085; --accent:#2f6fed; --accent2:#0f9d6b;
-    --warn:#b7791f; --danger:#d92d20; --onAccent:#ffffff; --radius:12px;
+    --bg:#fdf5f1; --panel:#fffbf9; --panel2:#f8e9e2; --line:#eed6cd;
+    --text:#4a3739; --muted:#a3827f; --accent:#b76e79; --accent2:#c08a5a;
+    --warn:#b07a2e; --danger:#c65a54; --onAccent:#ffffff; --radius:12px;
   }
   *{box-sizing:border-box}
   body{
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:linear-gradient(180deg,#f7f9fc,#eef2f7); color:var(--text); line-height:1.5;
+    background:linear-gradient(180deg,#fdf3ee,#f7e6de); color:var(--text); line-height:1.5;
     padding:32px 20px 80px;
   }
   .wrap{max-width:1000px; margin:0 auto}
@@ -24,7 +24,7 @@
   .sub{color:var(--muted); margin:0 0 28px; font-size:14px}
   .card{
     background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-    padding:20px 22px; margin-bottom:18px; box-shadow:0 1px 3px rgba(20,35,60,.06);
+    padding:20px 22px; margin-bottom:18px; box-shadow:0 1px 3px rgba(120,60,60,.08);
   }
   .card.dim{opacity:.5; pointer-events:none}
   .step-h{display:flex; align-items:center; gap:10px; margin:0 0 14px}
@@ -40,7 +40,7 @@
     border:2px dashed var(--line); border-radius:var(--radius); padding:30px 20px; text-align:center;
     cursor:pointer; transition:.15s; background:var(--panel2);
   }
-  #drop:hover,#drop.drag{border-color:var(--accent); background:#eaf1fe}
+  #drop:hover,#drop.drag{border-color:var(--accent); background:#fbeae2}
   #drop .big{font-size:15px; font-weight:600}
   #drop .small{color:var(--muted); font-size:13px; margin-top:4px}
   .fileinfo{display:flex; align-items:center; gap:10px; margin-top:14px; font-size:13px; color:var(--muted)}
@@ -51,6 +51,7 @@
     border-radius:8px; padding:8px 10px; font-size:14px; outline:none; width:100%;
   }
   select{padding-right:30px; text-overflow:ellipsis}
+  input[type=checkbox]{accent-color:var(--accent)}
   select:focus,input:focus{border-color:var(--accent)}
   .row{display:flex; gap:16px; flex-wrap:wrap}
   .row>div{flex:1; min-width:180px}
@@ -67,11 +68,11 @@
   .ms-list{
     position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; max-height:260px; overflow:auto;
     background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:6px; display:none;
-    box-shadow:0 12px 30px rgba(20,35,60,.14);
+    box-shadow:0 12px 30px rgba(120,60,60,.16);
   }
   .ms-list.open{display:block}
   .ms-opt{display:flex; align-items:center; gap:9px; padding:7px 8px; border-radius:6px; cursor:pointer; font-size:14px}
-  .ms-opt:hover{background:#eaf0fb}
+  .ms-opt:hover{background:#f8e3da}
   .ms-opt input{width:auto}
   .ms-opt .ct{margin-left:auto; color:var(--muted); font-size:12px}
 
@@ -87,7 +88,7 @@
   table{width:100%; border-collapse:collapse; font-size:13px}
   th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line)}
   th{color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.4px}
-  tbody tr:hover{background:#f2f7fe}
+  tbody tr:hover{background:#fbeee7}
   td.num,th.num{text-align:right; font-variant-numeric:tabular-nums}
   .strata-wrap{max-height:340px; overflow:auto; border:1px solid var(--line); border-radius:8px; margin-top:8px}
   input.rt{width:80px; text-align:right; padding:5px 8px}
