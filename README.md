@@ -2,9 +2,11 @@
 
 A single-page web app that takes a spreadsheet and pulls a **random sample** from it, stratified by one or more category columns. Everything runs locally in your browser — no data is uploaded anywhere.
 
+**▶ Live app: https://zoeyyes.github.io/excel-sampler/**
+
 ## Use it
 
-Open `index.html` in any modern browser (double-click it, or serve the folder). An internet connection is needed the first time so it can load the SheetJS library from a CDN.
+Just open the [live app](https://zoeyyes.github.io/excel-sampler/) — no install needed. Or run it locally by opening `index.html` in any modern browser (double-click it, or serve the folder). SheetJS is bundled in the repo (`xlsx.full.min.js`), so the tool works fully offline.
 
 ## How it works
 
